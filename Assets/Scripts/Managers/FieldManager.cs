@@ -43,7 +43,7 @@ namespace Managers
 
         private int _currentColor;
 
-        private List<List<Cell>> _cellList = new();
+        private List<List<Cell>> _cellList { get; set; } = new();
 
         private List<Vector2Int> _cellSnake = new();
 
@@ -68,13 +68,12 @@ namespace Managers
         private void Start()
         {
             _mainCamera = Camera.main;
-            InitializeField();
+            ExpandField(FieldSize + UpgradesManager.Pathfinding);
             InitializeSnakeOnField();
             _foodFinding = UpgradesManager.FoodFinding;
             _pointForFood = UpgradesManager.SteelStomach;
             StartCoroutine(MovementProcess());
             StartCoroutine(AppleSpawnProcess());
-            ExpandField(FieldSize + UpgradesManager.Pathfinding);
             _speedBoost = BoostManager.AdrenalineGlands;
             _metabolismBoost = BoostManager.FastMetabolism;
             for (int i = 0; i < UpgradesManager.StrongMuscles; i++)
@@ -92,17 +91,17 @@ namespace Managers
                 Destroy(_fieldParent.GetChild(0).gameObject);
             }
 
-            float startPosition = -(float)_fieldSize / 2 * _cellSize;
+            float centerPosition = (float)_fieldSize / 2 * _cellSize;
 
-            for (int i = _fieldSize - 1; i >= 0; i--)
+            for (int i = 0; i < _fieldSize; i++)
             {
                 _cellList.Add(new List<Cell>());
                 if (_fieldSize % 2 == 0) _currentColor = (_colors.Count - 1 == _currentColor) ? 0 : _currentColor + 1;
-                for (int j = _fieldSize - 1; j >= 0; j--)
+                for (int j = 0; j < _fieldSize; j++)
                 {
                     GameObject cellObject = Instantiate(_cellPrefab, _fieldParent, true);
-                    cellObject.transform.position = new Vector3(startPosition + (_fieldSize - 1 - i + 0.5f) * _cellSize,
-                        startPosition + (_fieldSize - 1 - j + 0.5f) * (_cellSize), 1);
+                    cellObject.transform.position = new Vector3((i * _cellSize) - centerPosition,
+                        (j * _cellSize) - centerPosition, 1);
                     cellObject.name = $"Cell[{i}][{j}]";
                     Cell cell = new Cell
                     {
@@ -111,7 +110,7 @@ namespace Managers
                     cell.cellSprite.color = _colors[_currentColor];
                     _currentColor = (_colors.Count - 1 == _currentColor) ? 0 : _currentColor + 1;
                     cell.cellObject = cellObject;
-                    _cellList[_fieldSize - 1 - i].Add(cell);
+                    _cellList[i].Add(cell);
                 }
             }
         }
@@ -123,31 +122,22 @@ namespace Managers
             Snake.Instance.Head.position = _cellList[startId.x][startId.y].cellObject.transform.position;
             _cellSnake.Add(startId);
             Vector2Int direction = PathFinder.RandomDirection();
-            Vector2Int target = -direction;
-            Vector2Int nextCell = startId + direction;
-            startId = nextCell;
-
+            Vector2Int nextCell = new Vector2Int(Mathf.Clamp(startId.x + direction.x, 0, _fieldSize - 1), 
+                Mathf.Clamp(startId.y + direction.y, 0, _fieldSize - 1));
 
             foreach (var segment in Snake.Instance.Segments)
             {
                 segment.segmentTransform.position =
-                    _cellList[startId.x][startId.y].cellObject.transform.position;
-                _cellSnake.Add(startId);
+                    _cellList[nextCell.x][nextCell.y].cellObject.transform.position;
+                _cellSnake.Add(nextCell);
                 while (_cellSnake.Contains(nextCell))
                 {
                     direction = PathFinder.RandomDirection();
                     nextCell = new Vector2Int(Mathf.Clamp(startId.x + direction.x, 0, _fieldSize - 1),
                         Mathf.Clamp(startId.y + direction.y, 0, _fieldSize - 1));
                 }
-
-                startId = nextCell;
             }
-
-            startId = _cellSnake[0];
-            Snake.Instance.UpdateSnakeSprites(_cellList[startId.x + target.x][startId.y + target.y].cellObject.transform
-                .position);
-            Snake.Instance.UpdateSnakeSprites(_cellList[startId.x + target.x][startId.y + target.y].cellObject.transform
-                .position);
+            Snake.Instance.UpdateSnakeSprites(_cellList[nextCell.x][nextCell.y].cellObject.transform.position);
         }
 
         public void MoveSnakeDirection(Vector2Int direction)
@@ -182,16 +172,16 @@ namespace Managers
 
         private void MoveSnakeRandom()
         {
-            Vector2Int direction = PathFinder.RandomDirection();
-            Vector2Int nextCell = _cellSnake[0] + direction;
-            nextCell = new Vector2Int(Mathf.Clamp(nextCell.x, 0, _fieldSize - 1),
-                Mathf.Clamp(nextCell.y, 0, _fieldSize - 1));
-            while (nextCell == _cellSnake[0] || nextCell == _cellSnake[1])
+
+            Vector2Int direction;
+            Vector2Int nextCell;
+            do
             {
                 direction = PathFinder.RandomDirection();
                 nextCell = new Vector2Int(Mathf.Clamp(_cellSnake[0].x + direction.x, 0, _fieldSize - 1),
                     Mathf.Clamp(_cellSnake[0].y + direction.y, 0, _fieldSize - 1));
             }
+            while (!(nextCell != _cellSnake[0] && nextCell != _cellSnake[1]));
 
             Snake.Instance.MoveToTarget(_cellList[nextCell.x][nextCell.y].cellObject.transform.position);
 
@@ -201,7 +191,6 @@ namespace Managers
             {
                 Destroy(foundApple.appleObject);
                 _appleList.Remove(foundApple);
-                Debug.Log($"Removed apple! Apple list count :{_appleList.Count}");
                 UIManager.Instance.UpdateFoodValue($"{_appleList.Count}/{Mathf.Floor(_appleMax - 1)}");
                 LevelGrowManager.EatApple(
                     (int)((foundApple.point * LevelGrowManager.baseGrowForFood +
@@ -264,44 +253,18 @@ namespace Managers
         {
             _fieldSize = newSize;
             _mainCamera.orthographicSize = 3.3f + (_fieldSize - 6) * 0.5f;
-            _mainCamera.transform.position = new Vector3(0, -1 - (_fieldSize - 6) * 0.15f, -10);
-            float startPosition = -_fieldSize / 2f * _cellSize;
+            _mainCamera.transform.position = new Vector3(0, -(float)_fieldSize / 2 * _cellSize, -10);
             _appleMax = newSize * newSize * percentMaxFood;
-            Debug.Log("apple max " + _appleMax);
-            UIManager.Instance.UpdateFoodValue($"{_appleList.Count}/{Mathf.Floor(_appleMax - 1)}");
-            for (int i = _fieldSize - 1; i >= 0; i--)
-            {
-                if (_cellList.Count < _fieldSize) _cellList.Add(new List<Cell>());
-                if (_fieldSize % 2 == 0) _currentColor = (_colors.Count - 1 == _currentColor) ? 0 : _currentColor + 1;
-                for (int j = _fieldSize - 1; j >= 0; j--)
-                {
-                    if (_cellList[_fieldSize - 1 - i].Count < _fieldSize)
-                    {
-                        GameObject cellObject = Instantiate(_cellPrefab, _fieldParent, true);
-                        Cell cell = new Cell
-                        {
-                            cellSprite = cellObject.GetComponent<SpriteRenderer>(),
-                            cellObject = cellObject
-                        };
-                        _cellList[_fieldSize - 1 - i].Add(cell);
-                    }
 
-                    _cellList[_fieldSize - 1 - i][_fieldSize - 1 - j].cellSprite.color = _colors[_currentColor];
-                    _currentColor = (_colors.Count - 1 == _currentColor) ? 0 : _currentColor + 1;
-                    _cellList[_fieldSize - 1 - i][_fieldSize - 1 - j].cellObject.transform.position = new Vector3(
-                        startPosition + (i + 0.5f) * _cellSize,
-                        startPosition + (j + 0.5f) * (_cellSize), 1);
-                    _cellList[_fieldSize - 1 - i][_fieldSize - 1 - j].cellObject.name = $"Cell[{i}][{j}]";
-                }
-            }
+            UIManager.Instance.UpdateFoodValue($"{_appleList.Count}/{Mathf.Floor(_appleMax - 1)}");
+
+            InitializeField();
 
             foreach (Apple apple in _appleList)
             {
                 apple.appleObject.transform.position =
                     (Vector2)_cellList[apple.appleId.x][apple.appleId.y].cellObject.transform.position;
             }
-
-            Snake.Instance.Head.position = _cellList[_cellSnake[0].x][_cellSnake[0].y].cellObject.transform.position;
 
             for (int i = 1; i < _cellSnake.Count; i++)
             {

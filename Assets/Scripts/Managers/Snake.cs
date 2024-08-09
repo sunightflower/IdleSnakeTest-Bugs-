@@ -89,9 +89,6 @@ namespace Managers
 
         public void MoveToTarget(Vector2 target)
         {
-            //int  
-
-
             if (Segments.Count > 0)
             {
                 for (int i = Segments.Count - 1; i >= 0; --i)
@@ -102,33 +99,35 @@ namespace Managers
             }
 
             var position = _head.position;
-            Vector2 tg = target - (Vector2) position;
+            Vector2 directionView = target - (Vector2)position;
             _head.position = target;
-            UpdateSnakeSprites(target + tg);
+            UpdateSnakeSprites(target + directionView);
         }
 
         public void UpdateSnakeSprites(Vector2 target)
         {
-            _head.LookAt2D(target);
+            if (Segments.Count > 0)
+            {
+                Vector2 directionView = _head.position - Segments[0].segmentTransform.position;
+                _head.LookAt2D((Vector2)_head.position + directionView);
+            }
+            else
+                _head.LookAt2D(target);
+            
             for (int i = 0; i < Segments.Count; i++)
             {
                 Transform nextSegment = (i == 0) ? _head : Segments[i - 1].segmentTransform;
                 Transform prevSegment = (i == Segments.Count - 1) ? null : Segments[i + 1].segmentTransform;
                 var position = nextSegment.position;
-                //Vector2 direction = (position - Segments[i].segmentTransform.position).normalized;
                 Segments[i].segmentTransform.LookAt2D(position);
-                Segments[i].segmentTransform.gameObject.name = "Segment" + (i + 1);
                 if (prevSegment != null)
                 {
                     Vector2 offset = nextSegment.position - prevSegment.position;
-                    Segments[i].segmentSprite.sprite =
-                        (offset.x == 0 || offset.y == 0) ? _straightSprite : _swivelSprite;
+                    Segments[i].segmentSprite.sprite = (offset.x == 0 || offset.y == 0) ? _straightSprite : _swivelSprite;
                     if (!(offset.x == 0 || offset.y == 0))
                     {
-                        Segments[i].segmentSprite.flipX =
-                            !((Segments[i].segmentTransform.position +
-                                  Segments[i].segmentTransform.right * _segmentWidth - prevSegment.position).magnitude <
-                              0.01f);
+                        Segments[i].segmentSprite.flipX = !((Segments[i].segmentTransform.position +
+                                  Segments[i].segmentTransform.right * _segmentWidth - prevSegment.position).magnitude < 0.01f);
                     }
                 }
                 else Segments[i].segmentSprite.sprite = _endSprite;
@@ -140,7 +139,7 @@ namespace Managers
         public void AddSegment()
         {
             GameObject obj = Instantiate(_segmentPrefab);
-
+            obj.name = "Segment" + (Segments.Count + 1);
             Segment segment = new Segment
             {
                 segmentSprite = obj.GetComponent<SpriteRenderer>()
