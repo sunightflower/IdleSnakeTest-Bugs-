@@ -22,7 +22,7 @@ namespace Managers
         [SerializeField]
         private float _segmentWidth;
 
-        [Header("Segment Properties"),SerializeField]
+        [Header("Segment Properties"), SerializeField]
         //private List<GameObject> _segmentsObjects = new();
         private GameObject _segmentPrefab;
 
@@ -91,15 +91,14 @@ namespace Managers
         {
             if (Segments.Count > 0)
             {
-                for (int i = Segments.Count - 1; i >= 0; --i)
+                for (int i = Segments.Count - 1; i >= 0; i--)
                 {
-                    Transform nextSegment = (i == 0) ? _head : Segments[i - 1].segmentTransform;
-                    Segments[i].segmentTransform.position = nextSegment.position;
+                    Transform nextToHeadSegment = (i == 0) ? _head : Segments[i - 1].segmentTransform;
+                    Segments[i].segmentTransform.position = nextToHeadSegment.position;
                 }
             }
-
-            var position = _head.position;
-            Vector2 directionView = target - (Vector2)position;
+            var startPosition = _head.position;
+            Vector2 directionView = target - (Vector2)startPosition;
             _head.position = target;
             UpdateSnakeSprites(target + directionView);
         }
@@ -112,8 +111,10 @@ namespace Managers
                 _head.LookAt2D((Vector2)_head.position + directionView);
             }
             else
+            {
                 _head.LookAt2D(target);
-            
+            }
+
             for (int i = 0; i < Segments.Count; i++)
             {
                 Transform nextSegment = (i == 0) ? _head : Segments[i - 1].segmentTransform;
@@ -123,23 +124,26 @@ namespace Managers
                 if (prevSegment != null)
                 {
                     Vector2 offset = nextSegment.position - prevSegment.position;
-                    Segments[i].segmentSprite.sprite = (offset.x == 0 || offset.y == 0) ? _straightSprite : _swivelSprite;
+                    Segments[i].segmentSprite.sprite =
+                        (offset.x == 0 || offset.y == 0) ? _straightSprite : _swivelSprite;
                     if (!(offset.x == 0 || offset.y == 0))
                     {
-                        Segments[i].segmentSprite.flipX = !((Segments[i].segmentTransform.position +
-                                  Segments[i].segmentTransform.right * _segmentWidth - prevSegment.position).magnitude < 0.01f);
+                        Segments[i].segmentSprite.flipX =
+                            !((Segments[i].segmentTransform.position +
+                                  Segments[i].segmentTransform.right * _segmentWidth - prevSegment.position).magnitude <
+                              0.01f);
                     }
                 }
                 else Segments[i].segmentSprite.sprite = _endSprite;
             }
         }
 
-     
-
         public void AddSegment()
         {
             GameObject obj = Instantiate(_segmentPrefab);
+
             obj.name = "Segment" + (Segments.Count + 1);
+
             Segment segment = new Segment
             {
                 segmentSprite = obj.GetComponent<SpriteRenderer>()
@@ -156,8 +160,7 @@ namespace Managers
 
         public void SetBloomAmount(float value)
         {
-           _snakeMaterial.SetFloat("_Thickness", value);
-        }        
+            _snakeMaterial.SetFloat("_Thickness", value);
+        }
     }
 }
-

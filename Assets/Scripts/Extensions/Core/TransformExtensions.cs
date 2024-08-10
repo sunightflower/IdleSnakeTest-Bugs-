@@ -37,11 +37,10 @@ namespace Extensions.Core
         public static IEnumerator ScaleWithLerp(this Transform transform ,Vector3 initialScale, Vector3 finalScale, float duration)
         {
             float timeElapsed = 0;
-            float percentage = 0;
             while (timeElapsed < duration)
             {
                 timeElapsed += Time.deltaTime;
-                percentage = timeElapsed / duration;
+                float percentage = timeElapsed / duration;
                 transform.localScale = Vector3.Lerp(initialScale, finalScale, percentage);
                 yield return null;
             }

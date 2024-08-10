@@ -169,8 +169,7 @@ namespace Managers
 
         public static void BuyGreatEyes()
         {
-            UpgradesManager.GreatEyes = 1;
-            MainShopManager.Instance.BuyGreatEyes();
+            FieldManager.Instance.UpgradeAppleCooldown();
             QuestManager.Instance.AddValueToQuest(QuestManager.Quest.QuestType.Unlock_Great_Eyes, 1);
         }
 

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Managers
@@ -7,32 +5,31 @@ namespace Managers
 
     public class TutorialManager : Utilities.Singleton<TutorialManager>
     {
-        [SerializeField]
-        private GameObject _tutorialHand;
-        [SerializeField]
-        private GameObject _tutorialBoostHand;
-        [SerializeField]
-        private GameObject _tutorialEvolveHand;
+        [SerializeField] private GameObject _tutorialHand;
+        [SerializeField] private GameObject _tutorialBoostHand;
+        [SerializeField] private GameObject _tutorialEvolveHand;
+
+        private bool _isHandShow;
+        private bool _isHandBoostShow;
+        private bool _isHandEvolveShow; 
 
         private bool _isHandShowPrefs
         {
             get => PlayerPrefs.GetInt("IsTutorialHandShow", 0)==1;
             set => PlayerPrefs.SetInt("IsTutorialHandShow", value ? 1 : 0);
         }  
+
         private bool _isHandBoostShowPrefs
         {
             get => PlayerPrefs.GetInt("IsTutorialHandShow", 0)==1;
             set => PlayerPrefs.SetInt("IsTutorialHandShow", value ? 1 : 0);
         }  
+
         private bool _isHandEvolveShowPrefs
         {
             get => PlayerPrefs.GetInt("IsTutorialHandShow", 0)==1;
             set => PlayerPrefs.SetInt("IsTutorialHandShow", value ? 1 : 0);
         }
-
-        private bool _isHandShow;
-        private bool _isHandBoostShow;
-        private bool _isHandEvolveShow;
 
         private void Start()
         {

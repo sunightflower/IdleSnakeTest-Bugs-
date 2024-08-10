@@ -122,8 +122,8 @@ namespace Managers
             Snake.Instance.Head.position = _cellList[startId.x][startId.y].cellObject.transform.position;
             _cellSnake.Add(startId);
             Vector2Int direction = PathFinder.RandomDirection();
-            Vector2Int nextCell = new Vector2Int(Mathf.Clamp(startId.x + direction.x, 0, _fieldSize - 1), 
-                Mathf.Clamp(startId.y + direction.y, 0, _fieldSize - 1));
+            Vector2Int nextCell = new Vector2Int(Mathf.Clamp(startId.x + direction.x, 0, _fieldSize - 1),
+                        Mathf.Clamp(startId.y + direction.y, 0, _fieldSize - 1));
 
             foreach (var segment in Snake.Instance.Segments)
             {
@@ -133,11 +133,12 @@ namespace Managers
                 while (_cellSnake.Contains(nextCell))
                 {
                     direction = PathFinder.RandomDirection();
-                    nextCell = new Vector2Int(Mathf.Clamp(startId.x + direction.x, 0, _fieldSize - 1),
-                        Mathf.Clamp(startId.y + direction.y, 0, _fieldSize - 1));
+                    nextCell = new Vector2Int(Mathf.Clamp(nextCell.x + direction.x, 0, _fieldSize - 1),
+                        Mathf.Clamp(nextCell.y + direction.y, 0, _fieldSize - 1));
                 }
             }
-            Snake.Instance.UpdateSnakeSprites(_cellList[nextCell.x][nextCell.y].cellObject.transform.position);
+            Snake.Instance.UpdateSnakeSprites(_cellList[nextCell.x][nextCell.y].cellObject.transform
+                .position);
         }
 
         public void MoveSnakeDirection(Vector2Int direction)
@@ -167,12 +168,11 @@ namespace Managers
         public void OnCloseExpandPopup()
         {
             _expandFieldPopup.SetActive(false);
-            ExpandField(_fieldSize+1);
+            ExpandField(_fieldSize + 1);
         }
 
         private void MoveSnakeRandom()
         {
-
             Vector2Int direction;
             Vector2Int nextCell;
             do
@@ -192,10 +192,9 @@ namespace Managers
                 Destroy(foundApple.appleObject);
                 _appleList.Remove(foundApple);
                 UIManager.Instance.UpdateFoodValue($"{_appleList.Count}/{Mathf.Floor(_appleMax - 1)}");
-                LevelGrowManager.EatApple(
-                    (int)((foundApple.point * LevelGrowManager.baseGrowForFood +
+                LevelGrowManager.EatApple((int)((foundApple.point * LevelGrowManager.baseGrowForFood +
                             LevelGrowManager.upGrowForFood * _pointForFood) *
-                           (BoostManager.isBoostMetabolism
+                            (BoostManager.isBoostMetabolism
                                ? (3 + (_metabolismBoost - 1) * 0.1f)
                                : 1)), foundApple.fruitID);
             }
@@ -255,11 +254,10 @@ namespace Managers
             _mainCamera.orthographicSize = 3.3f + (_fieldSize - 6) * 0.5f;
             _mainCamera.transform.position = new Vector3(0, -(float)_fieldSize / 2 * _cellSize, -10);
             _appleMax = newSize * newSize * percentMaxFood;
-
+            //Debug.Log("apple max " + _appleMax);
             UIManager.Instance.UpdateFoodValue($"{_appleList.Count}/{Mathf.Floor(_appleMax - 1)}");
 
             InitializeField();
-
             foreach (Apple apple in _appleList)
             {
                 apple.appleObject.transform.position =

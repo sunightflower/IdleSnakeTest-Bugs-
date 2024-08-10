@@ -1,36 +1,24 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 using Utilities;
 
 namespace Managers
 {
     public class UIManager : Singleton<UIManager>
     {
-        [SerializeField]
-        private TextMeshProUGUI _coinsValue;
-        [SerializeField]
-        private TextMeshProUGUI _diamondValue;
-
-        [SerializeField]
-        private TextMeshProUGUI _sizeValue;
-
-        [SerializeField]
-        private TextMeshProUGUI _ePValue;
-        [SerializeField]
-        private TextMeshProUGUI _ePValueInSkillTreeScreen;
-
-        [SerializeField]
-        private TextMeshProUGUI _maxFood;
-        [SerializeField]
-        private GameObject _firstMenu;
-        [SerializeField]
-        private GameObject _secondMenu;
-        [SerializeField]
-        private TextMeshProUGUI _version;
+        [SerializeField] private TextMeshProUGUI _coinsValue;
+        [SerializeField] private TextMeshProUGUI _diamondValue;
+        [SerializeField] private TextMeshProUGUI _sizeValue;
+        [SerializeField] private TextMeshProUGUI _ePValue;
+        [SerializeField] private TextMeshProUGUI _ePValueInSkillTreeScreen;
+        [SerializeField] private TextMeshProUGUI _maxFood;
+        [SerializeField] private GameObject _firstMenu;
+        [SerializeField] private GameObject _secondMenu;
+        [SerializeField] private TextMeshProUGUI _version;
 
         public UnityAction changeShopEvent; 
+
         private void Start()
         {
             _version.text = Application.version;
